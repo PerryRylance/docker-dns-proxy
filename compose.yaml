@@ -1,0 +1,28 @@
+services:
+    traefik:
+        image: traefik:v3.3
+        container_name: traefik
+        restart: unless-stopped
+        command:
+            - --providers.docker=true
+            - --providers.docker.exposedbydefault=false
+            - --providers.docker.network=proxy
+            - --entrypoints.web.address=:80
+            - --api.dashboard=true
+        ports:
+            - '80:80'
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+        networks:
+            - proxy
+        labels:
+            - traefik.enable=true
+            - traefik.docker.network=proxy
+            - traefik.http.routers.traefik-dashboard.rule=Host(`traefik.localhost`)
+            - traefik.http.routers.traefik-dashboard.entrypoints=web
+            - traefik.http.routers.traefik-dashboard.service=api@internal
+
+networks:
+    proxy:
+        name: proxy
+        driver: bridge
